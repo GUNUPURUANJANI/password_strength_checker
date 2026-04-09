@@ -1,1 +1,221 @@
-"# password_strength_checker" 
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Password Security</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+body{
+  margin:0;
+  background:#0D1117;
+  font-family:'Rajdhani',sans-serif;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
+
+/* MAIN CONTAINER */
+.container{
+  width:900px;
+  background:linear-gradient(135deg,#020617,#020617 60%,#02122b);
+  border-radius:25px;
+  padding:40px;
+  color:white;
+  box-shadow:0 0 40px rgba(0,0,0,0.6);
+}
+
+/* HEADER */
+.title{
+  font-size:32px;
+  letter-spacing:3px;
+}
+
+.subtitle{
+  color:#4a5568;
+  font-family:'Share Tech Mono',monospace;
+  margin-bottom:30px;
+}
+
+/* INPUT */
+.input-box{
+  position:relative;
+}
+
+input{
+  width:100%;
+  padding:16px;
+  border-radius:12px;
+  border:1px solid #aaa;
+  background:#dcdcdc;
+  font-size:18px;
+  outline:none;
+}
+
+.eye{
+  position:absolute;
+  right:10px;
+  top:50%;
+  transform:translateY(-50%);
+  cursor:pointer;
+}
+
+/* METER */
+.meter-label{
+  margin-top:25px;
+  color:#4a5568;
+  letter-spacing:2px;
+  font-size:14px;
+}
+
+.meter{
+  height:8px;
+  background:#111827;
+  border-radius:5px;
+  margin-top:10px;
+  overflow:hidden;
+}
+
+.fill{
+  height:100%;
+  width:0%;
+  transition:0.4s;
+}
+
+/* CRITERIA */
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:25px;
+  font-family:'Share Tech Mono',monospace;
+  color:#3d4d63;
+}
+
+.active{
+  color:#00FF9F;
+}
+
+/* ENTROPY */
+.entropy{
+  margin-top:25px;
+  padding:15px;
+  border:1px solid #1a2332;
+  border-radius:10px;
+  display:flex;
+  justify-content:space-between;
+}
+
+.entropy span:last-child{
+  color:#1F6FEB;
+}
+
+/* SUGGESTIONS */
+.suggestions{
+  margin-top:20px;
+  color:#4a5568;
+  font-family:'Share Tech Mono',monospace;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="title">🔒 PASSWORD SECURITY</div>
+  <div class="subtitle">// STRENGTH ANALYZER v2.4.1</div>
+
+  <div class="input-box">
+    <input type="password" id="pw" placeholder="Enter password...">
+    <span class="eye" onclick="toggle()">👁️</span>
+  </div>
+
+  <div class="meter-label">STRENGTH METER</div>
+  <div class="meter">
+    <div class="fill" id="fill"></div>
+  </div>
+
+  <div class="grid">
+    <div id="len">• 8+ characters</div>
+    <div id="upper">• Uppercase A-Z</div>
+    <div id="lower">• Lowercase a-z</div>
+    <div id="num">• Numbers 0-9</div>
+    <div id="sym">• Symbols !@#$</div>
+    <div id="long">• 12+ characters</div>
+  </div>
+
+  <div class="entropy">
+    <span>ENTROPY ESTIMATE</span>
+    <span id="entropy">— bits</span>
+  </div>
+
+  <div class="suggestions" id="suggest">
+    Start typing to analyze your password...
+  </div>
+
+</div>
+
+<script>
+const pw = document.getElementById("pw");
+const fill = document.getElementById("fill");
+const entropyText = document.getElementById("entropy");
+const suggest = document.getElementById("suggest");
+
+function toggle(){
+  pw.type = pw.type === "password" ? "text" : "password";
+}
+
+function entropyCalc(p){
+  let pool=0;
+  if(/[a-z]/.test(p)) pool+=26;
+  if(/[A-Z]/.test(p)) pool+=26;
+  if(/[0-9]/.test(p)) pool+=10;
+  if(/[^a-zA-Z0-9]/.test(p)) pool+=32;
+  return pool ? Math.round(p.length * Math.log2(pool)) : 0;
+}
+
+pw.addEventListener("input", () => {
+  let v = pw.value;
+
+  let checks = {
+    len: v.length >= 8,
+    upper: /[A-Z]/.test(v),
+    lower: /[a-z]/.test(v),
+    num: /[0-9]/.test(v),
+    sym: /[^a-zA-Z0-9]/.test(v),
+    long: v.length >= 12
+  };
+
+  Object.keys(checks).forEach(id=>{
+    document.getElementById(id).classList.toggle("active", checks[id]);
+  });
+
+  let score = Object.values(checks).filter(Boolean).length;
+
+  let colors = ["#FF4C4C","#FF4C4C","#FFA500","#1F6FEB","#00FF9F"];
+  let widths = ["20%","40%","60%","80%","100%"];
+
+  if(!v){
+    fill.style.width="0%";
+    suggest.innerText="Start typing to analyze your password...";
+    entropyText.innerText="— bits";
+    return;
+  }
+
+  fill.style.width = widths[score-1] || "10%";
+  fill.style.background = colors[score-1] || "#FF4C4C";
+
+  entropyText.innerText = entropyCalc(v) + " bits";
+
+  suggest.innerText = score < 4
+    ? "Improve your password by adding more variety"
+    : "Strong password ✅";
+});
+</script>
+
+</body>
+</html>
